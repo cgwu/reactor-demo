@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 60px;
+        }
+        #consoleLog {
+            border: solid 1px #999999;
+            border-top-color: #CCCCCC;
+            border-left-color: #CCCCCC;
+            padding: 5px;
+            width: 600px;
+            height: 400px;
+            overflow-y: scroll;
+            font-size: 12px;
+            line-hight: 14px;
+        }
+        #consoleLog p {
+            margin: 4px;
+        }
+        .echo-button {
+            background-color: #eee;
+            /* color: #f60; */
+            vertical-align: baseline;
+            font-size: 100%;
+            font-weight: 700;
+            border-color: #ccc;
+            border-width: 1px;
+            border-style: solid !important;
+        }
+    </style>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+<script language="javascript" type="text/javascript">
+
+  var wsUri = "";
+  var output;
+
+  function init()
+  {
+    wsUri = $("#wsUri").val();
+    output = document.getElementById("consoleLog");
+    testWebSocket();
+  }
+
+  function testWebSocket()
+  {
+    websocket = new WebSocket(wsUri);
+    websocket.onopen = function(evt) { onOpen(evt) };
+    websocket.onclose = function(evt) { onClose(evt) };
+    websocket.onmessage = function(evt) { onMessage(evt) };
+    websocket.onerror = function(evt) { onError(evt) };
+  }
+
+  function onOpen(evt)
+  {
+    writeToScreen("CONNECTED");
+    //doSend("WebSocket rocks可以工作");
+
+    $("#disconnect,#send").removeAttr("disabled");
+  }
+
+  function onClose(evt)
+  {
+    writeToScreen("DISCONNECTED");
+  }
+
+  function onMessage(evt)
+  {
+    writeToScreen('<span style="color: blue;">RESPONSE: ' + evt.data+'</span>');
+    //websocket.close();
+  }
+
+  function onError(evt)
+  {
+    console.log('ws onError:', evt);
+    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
+  }
+
+  function doSend(message)
+  {
+    writeToScreen("SENT: " + message);
+    websocket.send(message);
+  }
+
+  function writeToScreen(message)
+  {
+    var pre = document.createElement("p");
+    pre.style.wordWrap = "break-word";
+    pre.innerHTML = message;
+    output.appendChild(pre);
+  }
+
+  //window.addEventListener("load", init, false);
+
+$(function(){
+    $("#connect").click(function(){
+        init();
+    });
+    $("#disconnect").click(function(){
+        websocket.close();
+        $("#disconnect,#send").attr("disabled","");
+    });
+    $("#send").click(function(){
+        doSend($("#sendMessage").val());
+    });
+    $("#clearLogBut").click(function(){
+        $("#consoleLog").html('');
+    });
+});
+  </script>
+
+<h2>WebSocket Test</h2>
+
+<div id="echo">
+    <div id="echo-config" style="float: left;">
+        <strong>Location:</strong><br>
+        <input class="draw-border" id="wsUri" size="35" value="ws://localhost:9090/echo">
+        <br>
+        <!-- <input class="draw-border echo-checkbox" type="checkbox" id="secureCb" onClick="toggleTls();"><br>
+        <span id="secureCbLabel" style="font-size: smaller; color: black;">Use secure WebSocket (TLS)</span><br> -->
+        <button class="echo-button" id="connect">Connect</button>
+        <button class="echo-button" id="disconnect" disabled="">Disconnect</button>
+        <br>
+        <br>
+        <strong>Message:</strong><br>
+        <input class="draw-border" id="sendMessage" size="35" value="Rock it with HTML5 WebSocket">
+        <br>
+        <button class="echo-button" id="send" disabled="">Send</button>
+    </div>
+    <div id="echo-log" style="float: left; margin-left: 20px; padding-left: 20px; width: 350px; border-left: solid 1px #cccccc;"> <strong>Log:</strong>
+        <div id="consoleLog"></div>
+        <button class="echo-button" id="clearLogBut" style="position: relative; top: 3px;">Clear log</button>
+    </div>
+</div>
+
+<div style="clear: both"></div>
+
+</body>
+</html>
